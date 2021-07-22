@@ -52,7 +52,7 @@
         @click.native="saveVideo"
       >{{ isAlreadyRecord ? '结束录制(' + count + 's)' : '开始录制' }}</mt-button>
     </div>
-    <video ref="videob" controls=""  name="media"  v-show="!showVideo"></video>
+    <video ref="videob" controls=""  name="media"  v-show="!showVideo" width="100%" height="400"></video>
   </div>
 </template>
 
@@ -182,21 +182,6 @@
         if (this.isAlreadyRecord) {
           this.countTimer && clearTimeout(this.countTimer)
           this.showVideo = false
-          this.mediaRecorder.stop()
-          var blob = new Blob(this.recordedBlobs, {type: 'video/mp4'})
-          console.log(blob)
-          this.isAlreadyRecord = false
-          this.MediaStreamTrack && this.MediaStreamTrack.stop()
-          var reader = new FileReader();
-          reader.readAsDataURL(blob, 'utf-8')
-          reader.onload = () => {
-            console.log(reader.result); // base64格式
-            this.$refs.videob.src = reader.result
-          }
-
-        } else {
-          this.count = 8
-          this.isAlreadyRecord = true
           //当录制的数据可用时
           this.mediaRecorder.ondataavailable = (e) => {
             console.log(e.data)
@@ -204,6 +189,26 @@
               this.recordedBlobs.push(e.data)
             }
           }
+          this.mediaRecorder.stop()
+
+          setTimeout(() => {
+            var blob = new Blob(this.recordedBlobs, {type: 'video/mp4'})
+            console.log(blob)
+            this.isAlreadyRecord = false
+            this.MediaStreamTrack && this.MediaStreamTrack.stop()
+
+            var reader = new FileReader();
+            reader.readAsDataURL(blob, 'utf-8')
+            reader.onload = () => {
+              console.log(reader.result); // base64格式
+              this.$refs.videob.src = reader.result
+            }
+          }, 1000)
+
+
+        } else {
+          this.count = 8
+          this.isAlreadyRecord = true
           this.mediaRecorder.start(8000)
           this.countDown()()
         }
